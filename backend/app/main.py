@@ -1,0 +1,48 @@
+from fastapi import FastAPI
+from app.models.user import User
+from app.database import Base, engine
+from app.api import api
+from starlette.middleware.cors import CORSMiddleware
+from fastapi.exceptions import HTTPException, RequestValidationError
+from app.common.exceptions import (
+    BussinessException,
+    bussiness_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    global_exception_handler,
+)
+from app.config import UPLOAD_DIR
+from fastapi.staticfiles import StaticFiles
+
+Base.metadata.create_all(bind=engine) # 自动帮我们创建数据库和数据库表
+
+app = FastAPI()
+app.include_router(api) # 注册路由
+
+# 跨域配置
+origins = [
+	"http://localhost:5173",
+	"http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=origins,        # 允许的前端源，不要直接写 ["*"]
+	allow_credentials=True,       # ✅ 关键：允许前端携带 Authorization token
+	allow_methods=["*"],          # 允许所有请求方法 GET POST PUT DELETE OPTIONS
+	allow_headers=["*"],          # 允许所有请求头（包含Authorization）
+)
+
+#注册异常处理器 依次执行
+app.add_exception_handler(BussinessException, bussiness_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+# 全局异常处理器，必须放在最后注册
+app.add_exception_handler(Exception, global_exception_handler)
+
+#挂载静态的文件目录 http://127.0.0.1:8000/static/index.html
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+@app.get("/")
+
+def read_root():
+    return {"Hello": "World"}
