@@ -7,6 +7,7 @@ import time
 import uuid
 import shutil
 from app.common.response import Response
+from app.schemas.file import FileResponse
 
 
 router = APIRouter(prefix="/files", tags=["文件管理"])
@@ -35,10 +36,10 @@ def upload(file: UploadFile = File(...)):
     shutil.copyfileobj(file.file, f)
 
   return Response.sucess(
-    data={
-      "original_name": orignal_name,
-      "disk_name": disk_name,
-      "zie": file.size,
-      "url": f"/uploads/{disk_name}"
-    }
+    data=FileResponse(
+      original_name=orignal_name,
+      disk_name=disk_name,
+      size=file.size,
+      url=f"/uploads/{disk_name}",
+    )
   )
