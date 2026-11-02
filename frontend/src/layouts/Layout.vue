@@ -19,12 +19,13 @@
         <!-- 关键：用el-dropdown实现下拉菜单 -->
         <el-dropdown @command="onCommand">
           <div style="display: flex; align-items: center; cursor: pointer">
-            <img src="@/assets/imgs/logo.png" alt="" style="width: 30px; border-radius: 50%" />
-            <div style="margin-left: 3px">管理员</div>
+            <img :src="userInfo?.avatar" alt="" style="width: 30px; border-radius: 50%" />
+            <div style="margin-left: 3px">{{ userInfo?.name }}</div>
           </div>
 
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="goPerson">个人信息</el-dropdown-item>
               <el-dropdown-item command="handlelogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -63,12 +64,18 @@
 import { useRouter } from 'vue-router'
 import { Menu as IconMenu, Setting, User, House } from '@element-plus/icons-vue'
 import { logout } from '@/utils/auth'
+import { useUser } from '@/utils/user'
 const router = useRouter()
+const { userInfo } = useUser()
+
 const onCommand = (command) => {
   if (command === 'handlelogout') {
     logout()
     localStorage.removeItem('token') //清登录状态
     router.push('/login')
+  }
+  if (command === 'goPerson') {
+    router.push('/manager/profile')
   }
 }
 </script>
